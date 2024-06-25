@@ -376,23 +376,6 @@ class QuizBuilder:
         if self.verbose: logger.info(f"Chain compilation complete")
         
         return chain
-
-    def validate_response(self, response: Dict) -> bool:
-        try:
-            # Assuming the response is already a dictionary
-            if isinstance(response, dict):
-                if 'question' in response and 'choices' in response and 'answer' in response and 'explanation' in response:
-                    choices = response['choices']
-                    if isinstance(choices, dict):
-                        for key, value in choices.items():
-                            if not isinstance(key, str) or not isinstance(value, str):
-                                return False
-                        return True
-            return False
-        except TypeError as e:
-            if self.verbose:
-                logger.error(f"TypeError during response validation: {e}")
-            return False
     
     def validate_and_format_response(self) -> bool:
         try:
@@ -438,15 +421,6 @@ class QuizBuilder:
                 logger.info(f"Generated response attempt {attempts + 1}: {self.response}")
             
             # Directly check if the response format is valid
-            # if self.validate_response(response):
-            #     response["choices"] = self.format_choices(response["choices"])
-            #     generated_questions.append(response)
-            #     if self.verbose:
-            #         logger.info(f"Valid question added: {response}")
-            #         logger.info(f"Total generated questions: {len(generated_questions)}")
-            # else:
-            #     if self.verbose:
-            #         logger.warning(f"Invalid response format. Attempt {attempts + 1} of {max_attempts}")
             if self.validate_and_format_response():
                 generated_questions.append(self.response)
                 if self.verbose:
