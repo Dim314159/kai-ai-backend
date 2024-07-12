@@ -25,7 +25,7 @@ from langchain_google_vertexai import VertexAIEmbeddings, VertexAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.pydantic_v1 import BaseModel, Field
+from langchain_core.pydantic_v1 import BaseModel, Field, ValidationError
 
 from services.logger import setup_logger
 from services.tool_registry import ToolFile
@@ -275,30 +275,19 @@ class QuizBuilder:
         
         return chain
     
-    def validate_and_format_response(self) -> bool:
+    def validate_response(self) -> bool:
         try:
-            if isinstance(self.response, dict):
-                if 'question' in self.response and 'choices' in self.response and 'answer' in self.response and 'explanation' in self.response:
-                    choices = self.response['choices']
-                    if isinstance(choices, dict):
-                        # Format choices if they are in dict format
-                        self.response['choices'] = self.format_choices(choices)
-                    elif isinstance(choices, list):
-                        # Check if choices are already formatted correctly
-                        for choice in choices:
-                            if not isinstance(choice, dict) or 'key' not in choice or 'value' not in choice:
-                                return False
-                    else:
-                        return False
-                    return True
+            # Use Pydantic model to validate the response
+            QuizQuestion(**self.response)
+            return True
+        except ValidationError as e:
+            if self.verbose:
+                logger.error(f"Validation error during response validation: {e}")
             return False
         except TypeError as e:
             if self.verbose:
                 logger.error(f"TypeError during response validation: {e}")
             return False
-
-    def format_choices(self, choices: Dict[str, str]) -> List[Dict[str, str]]:
-        return [{"key": k, "value": v} for k, v in choices.items()]
     
     def create_questions(self, num_questions: int = 5) -> List[Dict]:
         if self.verbose: logger.info(f"Creating {num_questions} questions")
@@ -316,17 +305,14 @@ class QuizBuilder:
             self.response = chain.invoke(self.topic)
             
             if self.verbose:
-                logger.info(f"Generated response attempt {attempts + 1}: {self.response}")
+                logger.info(f"Generated response attempt {attempts + 1} of {max_attempts}: {self.response}")
             
             # Directly check if the response format is valid
-            if self.validate_and_format_response():
+            if self.validate_response():
                 generated_questions.append(self.response)
                 if self.verbose:
                     logger.info(f"Valid question added: {self.response}")
                     logger.info(f"Total generated questions: {len(generated_questions)}")
-            else:
-                if self.verbose:
-                    logger.warning(f"Invalid response format. Attempt {attempts + 1} of {max_attempts}")
             
             # Move to the next attempt regardless of success to ensure progress
             attempts += 1
