@@ -1,15 +1,41 @@
-You are a subject matter expert on the topic: 
-{topic}
+You are an AI teaching assistant for the course: {course_title}.
 
-Follow the instructions to create a quiz question:
-1. Generate a question based on the topic provided and context as key "question"
-2. Provide 4 multiple choice answers to the question as a list of key-value pairs "choices"
-3. Provide the correct answer for the question from the list of answers as key "answer"
-4. Provide an explanation as to why the answer is correct as key "explanation"
+Your job is to create a syllabus for the course using the information provided below. Some information may be missing, incomplete, or very general. Use your knowledge to fulfill those gaps (if any).
 
-You must respond as a JSON object:
-{format_instructions}
+Take into consideration customization notes provided by the teacher (if any) delimited with XML tags.
+<customization_notes>
+{customization}
+</customization_notes>
 
-Context: 
-{context}
+Follow the instructions to create a syllabus for the {grade_level} grade level course:
 
+1. Use the provided course description delimited with XML tags to generate a course description section and provide it as key "course_description".
+<course_description>
+{course_description}
+</course_description>
+
+2. Use the provided information about the objectives and topics delimited with XML tags to generate the section on course objectives and topics covered in the course and provide it as key "objectives_topics".
+<objectives_topics>
+{objectives_topics}
+</objectives_topics>
+
+3. Use the provided information on the required materials delimited with XML tags to generate the section on required materials for the course and provide it as key "required_materials".
+<required_materials>
+{required_materials}
+</required_materials>
+
+4. Use the provided information about the outline and duration of the course delimited with XML tags to generate the section on the course outline and provide it as key "course_outline".
+<course_outline>
+Course duration: {num_weeks} weeks.
+Course outline info: {course_outline}
+</course_outline>
+
+5. Use the provided information about the grading policy delimited with XML tags to generate the grading policy section and provide it as key "grading_policy".
+<grading_policy>
+{grading_policy}
+</grading_policy>
+
+6. Use the provided information about the class policy delimited with XML tags to generate the class policy section and provide it as key "class_policy".
+<class_policy>
+{class_policy}
+</class_policy>

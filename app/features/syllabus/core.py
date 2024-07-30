@@ -1,11 +1,11 @@
-from app.services.tool_registry import ToolFile
-from app.services.logger import setup_logger
-from app.features.syllabus.tools import SyllabusBuilder
-from app.api.error_utilities import LoaderError, ToolExecutorError
+from services.tool_registry import ToolFile
+from services.logger import setup_logger
+from features.syllabus.tools import SyllabusBuilder
+from api.error_utilities import LoaderError, ToolExecutorError
 
 logger = setup_logger()
 
-def executor(files: list[ToolFile], grade_level: str, course_title: str, course_description: str, objectives_topics: str = None, required_materials: str = None, num_weeks: int = 0, course_outline: str = None, grading_policy: str = None, class_policy: str = None, customization: str = None, verbose=False):
+def executor(grade_level: str, course_title: str, course_description: str, objectives_topics: str = None, required_materials: str = None, num_weeks: int = 0, course_outline: str = None, grading_policy: str = None, class_policy: str = None, customization: str = None, verbose=False):
     attributes = {}
     attributes['grade_level'] = grade_level
     attributes['course_title'] = course_title
