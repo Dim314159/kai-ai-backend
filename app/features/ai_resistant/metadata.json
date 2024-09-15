@@ -2,7 +2,7 @@
     "inputs": [
         {
             "label": "Upload files",
-            "name": "files",
+            "name": "file",
             "type": "file"
         }
     ]

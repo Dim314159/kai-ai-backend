@@ -5,7 +5,7 @@ from app.api.error_utilities import LoaderError, ToolExecutorError
 
 logger = setup_logger()
 
-def executor(verbose=False):
+def executor(file, verbose=False):
             
     try:
         output = AIResistant()
