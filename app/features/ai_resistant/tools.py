@@ -139,6 +139,7 @@ class URLLoader:
             documents = loader.load()
 
             if self.verbose:
+                logger.info(f"Loader type used: {type(loader)}")
                 logger.info(f"Successfully loaded file from {url}")
 
         except Exception as e:
@@ -177,65 +178,77 @@ class RAGpipeline:
         self.embedding_model = embedding_model or default_config["embedding_model"]
         self.verbose = verbose
 
-    def load_file(self, file) -> List[Document]:
+    def load_file(self, tool_file: ToolFile) -> List[Document]:
         if self.verbose:
-            logger.info(f"Loading {len(file)} files")
-            logger.info(f"Loader type used: {type(self.loader)}")
-        
-        logger.debug(f"Loader is a: {type(self.loader)}")
-        documents = []
+            logger.info(f"Loading {tool_file.filename}")
         
         try:
-            documents = self.loader.load(file)
+            documents = self.loader.load(tool_file)
         except Exception as e:
-            logger.error(f"An error occurred while loading the file: {e}")
+            logger.error(f"An error occurred while loading the file {tool_file.filename}: {e}")
+            documents = []
             
         return documents
     
     def split_documents(self, documents: List[Document]) -> List[Document]:
+        if not documents:
+            logger.info(f"List of documents for splitting is empty")
+            return []
         if self.verbose:
             logger.info(f"Splitting {len(documents)} documents")
             logger.info(f"Splitter type used: {type(self.splitter)}")
+        
             
-        chunks = self.splitter.split_documents(documents)
+        chunked_documents = self.splitter.split_documents(documents)
         
         if self.verbose:
-            logger.info(f"Split {len(documents)} documents into {len(chunks)} chunks")
+            logger.info(f"Split {len(documents)} documents into {len(chunked_documents)} chunks")
         
-        return chunks
+        return chunked_documents
     
     def create_vectorstore(self, documents: List[Document]):
+        if not documents:
+            logger.info(f"List of documents chunks for vectorstore creation is empty")
+            return None
         if self.verbose:
-            logger.info(f"Creating vectorstore from {len(documents)} documents")
-        self.vectorstore = self.vectorstore_class.from_documents(documents[:25], self.embedding_model)
+            logger.info(f"Creating vectorstore from {len(documents)} documents chunks")
+        vectorstore = self.vectorstore_class.from_documents(documents[:25], self.embedding_model)
 
         if self.verbose:
             logger.info(f"Vectorstore created")
-        return self.vectorstore
+        return vectorstore
     
     def compile(self):
         # Compile the pipeline
         self.load_file = RAGRunnable(self.load_file)
         self.split_documents = RAGRunnable(self.split_documents)
         self.create_vectorstore = RAGRunnable(self.create_vectorstore)
-        if self.verbose: logger.info(f"Completed pipeline compilation")
+        if self.verbose:
+            logger.info(f"Completed pipeline compilation")
     
-    def __call__(self, documents):
+    def __call__(self, tool_file: ToolFile):
         # Returns a vectorstore ready for usage 
         
         if self.verbose: 
             logger.info(f"Executing pipeline")
-            logger.info(f"Start of Pipeline received: {len(documents)} documents of type {type(documents[0])}")
+            logger.info(f"Start of Pipeline received: {tool_file.filename}")
         
         pipeline = self.load_file | self.split_documents | self.create_vectorstore
-        return pipeline(documents)
+        return pipeline(tool_file)
 
 
 class AIResistant():
-    def __init__(self, model = None, prompt = None):
+    def __init__(self, vectorstore, model = None, prompt = None):
         default_config = {
             "model": GoogleGenerativeAI(model="gemini-1.0-pro", temperature=0.7),
             "prompt": read_text_file('prompts/ai_resistant.txt')
         }
         self.model = model or default_config["model"]
         self.prompt = prompt or default_config["prompt"]
+        
+        if vectorstore is None:
+            raise ValueError("Vectorstore must be provided")
+        self.vectorstore = vectorstore
+        retriever = self.vectorstore.as_retriever()
+
+
