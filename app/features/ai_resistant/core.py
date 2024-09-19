@@ -7,12 +7,7 @@ logger = setup_logger()
 
 def executor(file, verbose=False):
     try:
-        # Instantiate RAG pipeline with default values
-        pipeline = RAGpipeline(verbose=verbose)
-        pipeline.compile()
-        # Process the uploaded files
-        vectorstore = pipeline(file)
-        output = AIResistant(vectorstore)
+        output = AIResistant(file, verbose=True).generate_suggestions()
     
     except LoaderError as e:
         error_message = e
