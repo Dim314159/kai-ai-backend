@@ -113,8 +113,10 @@ class URLLoader:
                 logger.error(f"Failed to download file from {url} with status code {response.status_code}")
                 return ''
 
-            parsed_url = urlparse(url)
-            file_name = os.path.basename(parsed_url.path)
+            #parsed_url = urlparse(url)
+            #file_name = os.path.basename(parsed_url.path)
+            #file_type = file_name.split(".")[-1].lower() if "." in file_name else None
+            file_name = tool_file['filename']
             file_type = file_name.split(".")[-1].lower() if "." in file_name else None
 
             if file_type not in self.loaders:
@@ -168,17 +170,17 @@ class AIResistant():
             return ''
         # Format the prompt with the assignment text
 
-        # prompt = PromptTemplate(
-        #     template=self.prompt_template,
-        #     input_variables=["assignment_text"]
-        # )
-        # chain = prompt | self.model
+        prompt = PromptTemplate(
+            template=self.prompt_template,
+            input_variables=["assignment_text"]
+        )
+        chain = prompt | self.model
 
-        # try:
-        #     # Generate suggestions using the AI model
-        #     response = chain.invoke({"assignment_text": assignment_text})
-        #     return response.content
-        # except Exception as e:
-        #     if self.verbose:
-        #         logger.error(f"Error generating suggestions: {e}")
-        #     return "An error occurred while generating suggestions."
+        try:
+            # Generate suggestions using the AI model
+            response = chain.invoke({"assignment_text": assignment_text})
+            return response
+        except Exception as e:
+            if self.verbose:
+                logger.error(f"Error generating suggestions: {e}")
+            return "An error occurred while generating suggestions."
