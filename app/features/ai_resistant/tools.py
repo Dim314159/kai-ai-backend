@@ -4,7 +4,7 @@ import os
 #import json
 #import time
 
-#from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 #from langchain_core.output_parsers import JsonOutputParser
 #from langchain_core.pydantic_v1 import BaseModel, Field, ValidationError
 from langchain_google_genai import GoogleGenerativeAI
@@ -167,12 +167,18 @@ class AIResistant():
         if not assignment_text:
             return ''
         # Format the prompt with the assignment text
-        prompt = self.prompt_template.format(assignment_text=assignment_text)
-        try:
-            # Generate suggestions using the AI model
-            response = self.model.invoke(prompt)
-            return response.content
-        except Exception as e:
-            if self.verbose:
-                logger.error(f"Error generating suggestions: {e}")
-            return "An error occurred while generating suggestions."
+
+        # prompt = PromptTemplate(
+        #     template=self.prompt_template,
+        #     input_variables=["assignment_text"]
+        # )
+        # chain = prompt | self.model
+
+        # try:
+        #     # Generate suggestions using the AI model
+        #     response = chain.invoke({"assignment_text": assignment_text})
+        #     return response.content
+        # except Exception as e:
+        #     if self.verbose:
+        #         logger.error(f"Error generating suggestions: {e}")
+        #     return "An error occurred while generating suggestions."
