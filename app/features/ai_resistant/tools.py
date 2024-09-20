@@ -70,7 +70,7 @@ class LangChainBaseLoader:
     def load(self) -> str:
         text = ''
         try:
-            loader = self.create_loader(self.file_path)
+            loader = self.create_loader()
             loaded_documents = loader.load()
             for doc in loaded_documents:
                 text += self.clean_text(doc.page_content)
@@ -103,9 +103,9 @@ class URLLoader:
             'txt': LangChainTextLoader
         }
 
-    def load(self, tool_file: ToolFile) -> List[Document]:
+    def load(self, tool_file) -> str:
         text = ''
-        url = tool_file.url
+        url = tool_file['url']
         tmp_file_path = None  # Initialize here for scope
         try:
             response = requests.get(url)
@@ -155,7 +155,7 @@ class AIResistant():
         default_config = {
             "loader": URLLoader(verbose = verbose),
             "model": GoogleGenerativeAI(model="gemini-1.0-pro", temperature=0.7),
-            "prompt_template": read_text_file('prompts/ai_resistant.txt')
+            "prompt_template": read_text_file('prompts/ai_resistant_prompt.txt')
         }
         self.loader = loader or default_config["loader"]
         self.model = model or default_config["model"]
@@ -167,7 +167,7 @@ class AIResistant():
         if not assignment_text:
             return ''
         # Format the prompt with the assignment text
-        prompt = self.prompt_template.format(assignment_text=self.assignment_text)
+        prompt = self.prompt_template.format(assignment_text=assignment_text)
         try:
             # Generate suggestions using the AI model
             response = self.model.invoke(prompt)
